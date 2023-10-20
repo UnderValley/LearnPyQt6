@@ -8,7 +8,7 @@ class Window(QWidget):
         super().__init__()
         self.setGeometry(200, 200, 700, 400)
         self.setWindowTitle("Python GUI Development")
-        self.setWindowIcon(QIcon())
+        self.setWindowIcon(QIcon('Image/Chihaya Anon.png'))
 
 app = QApplication(sys.argv)
 window = Window()
