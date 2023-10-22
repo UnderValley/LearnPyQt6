@@ -21,3 +21,11 @@
 ### Problems Unsolved
 
 * The directory "venv" in "MyWindows" cannot be pushed to my repository
+
+## Fri. 20th, Oct
+### Learing Progress
+- Learnt about basic qt widget, label, button, layout
+- had seen the 2.7 episode of the course
+
+### The problems I encountered
+- no 
