@@ -30,7 +30,7 @@
 ### The problems I encountered
 - no 
 
-## Sun. 22th, Oct
+## Sun. 22nd, Oct
 ### The problems I encountered
 1. the class "QPushbutton.clicked" doesn't have the method "connect" 
     - Cause: Not found yet. I guess it's related to pycharm IDE.
@@ -39,3 +39,10 @@
 ### Learning Progress
 - Learnt about all the basic widgets in PyQt6
 - had seen the 3.9 episode of the course
+
+## Mon. 23rd, Oct
+### Learning Progress
+- built up a stream client
+- learnt about socket udp and opencv
+
+### No Problems Occured
