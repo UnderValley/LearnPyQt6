@@ -5,24 +5,31 @@ import sys
 import cv2
 from PyQt6.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
 import numpy as np
+import time
 
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
-    webcamindex = 0
-
+    webcam_index = 204     #change the index to select webcam
+    shoot_flag = 0
+    pic_filename = "images/" + str(time.asctime( time.localtime(time.time()) )) + ".png"
     def __init__(self):
         super().__init__()
         self._run_flag = True
 
     def run(self):
         # capture from web cam
-        cap = cv2.VideoCapture(self.webcamindex)
+        cap = cv2.VideoCapture(self.webcam_index)
         if not cap.isOpened():
             print("Cannot open camera")
             exit()
         while self._run_flag:
             ret, cv_img = cap.read()
+            if self.shoot_flag == 1:
+                cv2.imwrite(self.pic_filename, cv_img)
+                self.shoot_flag = 0
+                self.pic_filename = "images/" + str(time.asctime(time.localtime(time.time()))) + ".png"
+            # cv_img = cv2.resize(cv_img, (4000, 3000))
             if ret:
                 self.change_pixmap_signal.emit(cv_img)
         # shut down capture system
@@ -38,8 +45,8 @@ class App(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Qt live label demo")
-        self.disply_width = 640
-        self.display_height = 480
+        self.disply_width = 640 * 2
+        self.display_height = 480 * 2
         # create the label that holds the image
         self.image_label = QLabel(self)
         self.image_label.resize(self.disply_width, self.display_height)
@@ -58,16 +65,19 @@ class App(QWidget):
         # self.btn_close = QPushButton("Close")
 
         self.combobox = QComboBox()
-        self.webcam_detect()
+        self.btnshot = QPushButton("Shoot")
+        # self.webcam_detect()
         # self.combobox.currentTextChanged.connect(self.select_webcam)
         # self.combobox.addItem("1")
 
         hbox.addWidget(self.combobox)
+        hbox.addWidget(self.btnshot)
         # hbox.addWidget(self.btn_start)
         # hbox.addWidget(self.btn_close)
         # self.btn_start.clicked.connect(self.link_start)
         # self.btn_close.clicked.connect(self.link_close)
 
+        self.btnshot.clicked.connect(self.cam_shoot)
         self.setLayout(hbox)
 
         # create the video capture thread
@@ -98,29 +108,17 @@ class App(QWidget):
         p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.AspectRatioMode.KeepAspectRatio)
         return QPixmap.fromImage(p)
 
-    def webcam_detect(self):
-        i = 0
-        capdetect = cv2.VideoCapture(i)
-        while capdetect.isOpened() :
-            i += 1
-            capdetect.release()
-            capdetect = cv2.VideoCapture(i)
-        capdetect.release()
-        for a in range(0, i):
-            self.combobox.addItem(str(a))
+    # @pyqtSlot(np.ndarray)
+    def cam_shoot(self):
+         self.thread.shoot_flag = 1
+
+
+    # def webcam_detect(self):
 
     # def select_webcam(self):
-        # self.thread.quit()
-        # self.thread = VideoThread()
-        # self.thread.webcamindex = int(self.combobox.currentText())
-        # self.textLabel.setText(self.combobox.currentText())
 
     # def link_start(self):
-    #
-    #     self.thread.start()
-    #
-    # def link_close(self):
-    #     self.thread.stop()
+
 
 
 if __name__ == "__main__":
