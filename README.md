@@ -46,3 +46,15 @@
 - learnt about socket udp and opencv
 
 ### No Problems Occured
+
+## Nov. 25th, Sat
+
+ It's been a long time since I updated this markdown last time. I'm getting lazier and lazier(TAT). Now that the mid-term examination has finished, it's necessary for me to regain my dream and be busy with my study
+
+ ### Learning Progress
+ - finished the camera calibration
+ - created a drawing board where a transformation matrix need to be found
+
+ ### Problems I encountered
+ - At first, the result of calibration and undistort was a piece of shit, and I asked some predecessors but found no answer. Therefore, I scanned the code carefully, and found that even if I fed the program plenty of images, it only "digest" three of them. It didn't find chessboard on the rest. So, I photoed more images, and finally got adequate data to complete the calibration.
+ 
