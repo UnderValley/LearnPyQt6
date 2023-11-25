@@ -2,6 +2,9 @@ import cv2
 import numpy as np
 import cv2 as cv
 import glob
+#debug info
+count = 0
+
 # termination criteria
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 22, 0.001)
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
@@ -12,6 +15,7 @@ objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
 images = glob.glob('images/*.png')
 for fname in images:
+
     img = cv.imread(fname)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     # Find the chess board corners
@@ -24,12 +28,17 @@ for fname in images:
         # Draw and display the corners
         cv.drawChessboardCorners(img, (7,6), corners2, ret)
         cv.imshow('img', img)
+        # count = count + 1
         cv.waitKey(500)
 cv.destroyAllWindows()
 ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
-print (ret, mtx, dist, rvecs, tvecs)
+
+# print(count)
+# print (ret, mtx, dist, rvecs, tvecs)
+# print(mtx)
+print(dist)
 #undist
-img = cv.imread('images/Mon Nov  6 20:28:31 2023.png')
+img = cv.imread('images/Sat Nov 25 16:42:50 2023.png')
 h,  w = img.shape[:2]
 newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (w,h))
 # undistort

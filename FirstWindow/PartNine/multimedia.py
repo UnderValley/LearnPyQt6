@@ -1,3 +1,4 @@
+import numpy
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton
 from PyQt6.QtGui import QPixmap
@@ -7,7 +8,19 @@ from PyQt6.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
 import numpy as np
 import time
 
+mtx = np.array([[329.27575738, 0, 347.99824656], [0, 328.85582461, 219.0933177 ], [0, 0, 1]])
+dist = np.array([-3.39635228e-01, 1.58532494e-01, 7.93601798e-04, 1.17840905e-04, -4.30169501e-02])
 
+def undist(img):
+    h, w = img.shape[:2]
+    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+    # undistort
+    dst = cv2.undistort(img, mtx, dist, None, newcameramtx)
+    # crop the image
+    x, y, w, h = roi
+    dst = dst[y:y + h, x:x + w]
+    # dst = cv2.resize(dst, (20 * w, 20 * h), interpolation=cv2.INTER_CUBIC)
+    return dst
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
     webcam_index = 204     #change the index to select webcam
@@ -25,6 +38,7 @@ class VideoThread(QThread):
             exit()
         while self._run_flag:
             ret, cv_img = cap.read()
+            cv_img = undist(cv_img)
             if self.shoot_flag == 1:
                 cv2.imwrite(self.pic_filename, cv_img)
                 self.shoot_flag = 0
