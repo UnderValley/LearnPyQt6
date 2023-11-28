@@ -58,3 +58,8 @@
  ### Problems I encountered
  - At first, the result of calibration and undistort was a piece of shit, and I asked some predecessors but found no answer. Therefore, I scanned the code carefully, and found that even if I fed the program plenty of images, it only "digest" three of them. It didn't find chessboard on the rest. So, I photoed more images, and finally got adequate data to complete the calibration.
  
+ ## Nov. 28th, Tue
+
+ ### Learning Progress
+ - solved the problem that Qpainter cannot draw on the Qlabel. Solution: use QPainter to create a pixmap which is used to fill a new Qlabel created.
+ 
