@@ -1,7 +1,7 @@
 import numpy as np
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton
-from PyQt6.QtGui import QPixmap, QPainter, QPen, QImage
+from PyQt6.QtGui import QPixmap, QPainter, QPen, QImage, QTransform
 from PyQt6.QtCore import Qt
 import sys
 
@@ -26,7 +26,7 @@ class Window(QWidget):
         self.label1.setGeometry(1240, 370, 100, 100)
         self.label2.setGeometry(1240, 1140, 100, 100)
         self.label_top = QLabel(self)
-        self.label_top.setGeometry(self.image_label.pos().x(),self.image_label.pos().y() ,self.image_label.size().width(),self.image_label.size().height())
+        self.label_top.setGeometry(0,0,1500,1500)
         self.image_label.setPixmap(QPixmap.fromImage(QImage('images/Sat Nov 25 17:43:20 2023.png').scaled(self.disply_width, self.display_height, Qt.AspectRatioMode.KeepAspectRatio)))
 
         self.pos1 = [0, 0]
@@ -61,11 +61,17 @@ class Window(QWidget):
         qp = QPainter(pixmap)
         pen = QPen(Qt.GlobalColor.red, 3)
         qp.setPen(pen)
+        # qp.drawLine(self.pos1[0], self.pos1[1], self.pos2[0], self.pos2[1])
         output_point1 = self.perTransform(self.pos1)
         output_point2 = self.perTransform(self.pos2)
-        qp.drawLine(output_point1[0] - self.image_label.pos().x(), output_point1[1] - self.image_label.pos().y(), output_point2[0] - self.image_label.pos().x(), output_point2[1] - self.image_label.pos().y())
+        qp.drawLine(output_point1[0], output_point1[1], output_point2[0], output_point2[1])
         # self.label1.setText("{0}, {1}\n{2}, {3}".format(self.pos1[0], self.pos1[1], int(output_point1[0]), int(output_point1[1])))
         qp.end()
+        '''
+        transfer = QTransform(3.16260888e-02, -3.30701236e-01,  4.19977106e+02,-1.09647099e-01, -1.31679696e-01,  4.87941764e+02, -2.41137870e-04, -2.91447781e-04,  1.00000000e+00)
+        # transfer = transfer.setMatrix(3.16260888e-02, -3.30701236e-01,  4.19977106e+02,-1.09647099e-01, -1.31679696e-01,  4.87941764e+02, -2.41137870e-04, -2.91447781e-04,  1.00000000e+00)
+        pixmap = pixmap.transformed(transfer)
+        '''
         self.label_top.setPixmap(pixmap)
 
     def perTransform(self, p):
