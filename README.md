@@ -1,4 +1,11 @@
-# LearnPyQt6
+# About the project
+- In the there are three directories in the "FirstWindow", in which "Part One" & "Part Two" record the process I learnt PyQt6. And in the rest is the main code of the project.
+- "camera calibration.py" is a program to calibrate camera and get its paraments.
+- "DrawingBoard.py" is a test program, testing the transformation matrix.
+- "transformationMatrix.py" get transformation matrix offline.
+- "multimedia" will be the final client to achieve the objective of this project.
+
+# Learn Process Record
 ## Thur. 19th, Oct
 ### What I've achieved
 * created windows and learnt some initialization methods
@@ -66,3 +73,5 @@
 ## Dec. 3rd, Sun
 ### Learning Progress
 - created a drawing board successfully.
+### Problems
+- have no figured out how to use the function/method Qpixmap.transformed() yet. 

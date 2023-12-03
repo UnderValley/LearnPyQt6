@@ -1,7 +1,7 @@
 import numpy
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QPainter, QPen, QImage
 import sys
 import cv2
 from PyQt6.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
@@ -10,6 +10,9 @@ import time
 
 mtx = np.array([[329.27575738, 0, 347.99824656], [0, 328.85582461, 219.0933177 ], [0, 0, 1]])
 dist = np.array([-3.39635228e-01, 1.58532494e-01, 7.93601798e-04, 1.17840905e-04, -4.30169501e-02])
+tr_matrix = np.array([[ 3.16260888e-02, -3.30701236e-01,  4.19977106e+02],
+ [-1.09647099e-01, -1.31679696e-01,  4.87941764e+02],
+ [-2.41137870e-04, -2.91447781e-04,  1.00000000e+00]])  # perspective transformation matrix
 
 def undist(img):
     h, w = img.shape[:2]
@@ -63,36 +66,25 @@ class App(QWidget):
         self.display_height = 480 * 2
         # create the label that holds the image
         self.image_label = QLabel(self)
-        self.image_label.resize(self.disply_width, self.display_height)
+        self.image_label.setGeometry(11, 285, self.disply_width, self.display_height)
         # create a text label
         self.textLabel = QLabel('Webcam')
+        self.setMouseTracking(True)
 
-        # create a vertical box layout and add the two labels
-        vbox = QVBoxLayout()
-        vbox.addWidget(self.image_label)
-        vbox.addWidget(self.textLabel)
-        # set the vbox layout as the widgets layout
-        hbox = QHBoxLayout()
-        hbox.addLayout(vbox)
+        self.label1 = QLabel("Press", self)
+        self.label2 = QLabel("Release", self)
+        self.label1.setGeometry(1240, 370, 100, 100)
+        self.label2.setGeometry(1240, 1140, 100, 100)
+        self.label_top = QLabel(self)
+        self.label_top.setGeometry(0, 0, 1500, 1500)
 
-        # self.btn_start = QPushButton("Start")
-        # self.btn_close = QPushButton("Close")
-
-        self.combobox = QComboBox()
-        self.btnshot = QPushButton("Shoot")
-        # self.webcam_detect()
-        # self.combobox.currentTextChanged.connect(self.select_webcam)
-        # self.combobox.addItem("1")
-
-        hbox.addWidget(self.combobox)
-        hbox.addWidget(self.btnshot)
-        # hbox.addWidget(self.btn_start)
-        # hbox.addWidget(self.btn_close)
-        # self.btn_start.clicked.connect(self.link_start)
-        # self.btn_close.clicked.connect(self.link_close)
-
+        # self.combobox = QComboBox(self)
+        self.btnshot = QPushButton("Shoot", self)
+        self.btnshot.setGeometry(1240, 700, 50, 20)
         self.btnshot.clicked.connect(self.cam_shoot)
-        self.setLayout(hbox)
+
+        self.pos1 = [0, 0]
+        self.pos2 = [0, 0]
 
         # create the video capture thread
         self.thread = VideoThread()
@@ -100,8 +92,6 @@ class App(QWidget):
         self.thread.change_pixmap_signal.connect(self.update_image)
         # start the thread
         self.thread.start()
-
-
 
     def closeEvent(self, event):
         self.thread.stop()
@@ -126,6 +116,52 @@ class App(QWidget):
     def cam_shoot(self):
          self.thread.shoot_flag = 1
 
+    def paintEvent(self, event):
+        painter = QPainter()
+        painter.begin(self)
+        painter.drawRect(1400, 200, 900, 1200)
+        # painter.setPen(QPen(Qt.GlobalColor.black, 5, Qt.PenStyle.SolidLine))
+        painter.drawLine(self.pos1[0], self.pos1[1], self.pos2[0], self.pos2[1])
+        painter.end()
+        self.set_Label()
+
+    def mousePressEvent(self, event):
+        if event.buttons() & Qt.MouseButton.LeftButton:
+            self.pos1[0], self.pos1[1] = self.cursor().pos().x() - self.x(), self.cursor().pos().y() - self.y() - 38
+            self.pos2[0], self.pos2[1] = self.cursor().pos().x() - self.x(), self.cursor().pos().y() - self.y() - 38
+            self.label1.setText("{0}, {1}".format(self.pos1[0], self.pos1[1]))
+            self.update()
+
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() & Qt.MouseButton.LeftButton:
+            self.pos2[0], self.pos2[1] = self.cursor().pos().x() - self.x(), self.cursor().pos().y() - self.y() - 38
+            self.label2.setText("{0}, {1}".format(self.pos2[0], self.pos2[1]))
+            self.update()
+
+    def set_Label(self):
+        pixmap = QPixmap(self.label_top.size())
+        pixmap.fill(Qt.GlobalColor.transparent)
+        qp = QPainter(pixmap)
+        pen = QPen(Qt.GlobalColor.red, 3)
+        qp.setPen(pen)
+        # qp.drawLine(self.pos1[0], self.pos1[1], self.pos2[0], self.pos2[1])
+        output_point1 = self.perTransform(self.pos1)
+        output_point2 = self.perTransform(self.pos2)
+        qp.drawLine(output_point1[0], output_point1[1], output_point2[0], output_point2[1])
+        self.label1.setText("{0}, {1}\n{2}, {3}".format(self.pos1[0], self.pos1[1], int(output_point1[0]), int(output_point1[1])))
+        qp.end()
+        '''
+        transfer = QTransform(3.16260888e-02, -3.30701236e-01,  4.19977106e+02,-1.09647099e-01, -1.31679696e-01,  4.87941764e+02, -2.41137870e-04, -2.91447781e-04,  1.00000000e+00)
+        # transfer = transfer.setMatrix(3.16260888e-02, -3.30701236e-01,  4.19977106e+02,-1.09647099e-01, -1.31679696e-01,  4.87941764e+02, -2.41137870e-04, -2.91447781e-04,  1.00000000e+00)
+        pixmap = pixmap.transformed(transfer)
+        '''
+        self.label_top.setPixmap(pixmap)
+
+    def perTransform(self, p):
+        result = np.matmul(tr_matrix, np.array([p[0], p[1], 1]))
+        result = result / result[2]
+        return [result[0], result[1]]
 
     # def webcam_detect(self):
 

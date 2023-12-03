@@ -58,13 +58,16 @@ class Window(QWidget):
     def set_Label(self):
         pixmap = QPixmap(self.label_top.size())
         pixmap.fill(Qt.GlobalColor.transparent)
+        transfer = QTransform(3.16260888e-02, -3.30701236e-01, 4.19977106e+02, -1.09647099e-01, -1.31679696e-01,
+                              4.87941764e+02, -2.41137870e-04, -2.91447781e-04, 1.00000000e+00)
         qp = QPainter(pixmap)
+        qp.setTransform(transfer)
         pen = QPen(Qt.GlobalColor.red, 3)
         qp.setPen(pen)
-        # qp.drawLine(self.pos1[0], self.pos1[1], self.pos2[0], self.pos2[1])
-        output_point1 = self.perTransform(self.pos1)
-        output_point2 = self.perTransform(self.pos2)
-        qp.drawLine(output_point1[0], output_point1[1], output_point2[0], output_point2[1])
+        qp.drawLine(self.pos1[0], self.pos1[1], self.pos2[0], self.pos2[1])
+        # output_point1 = self.perTransform(self.pos1)
+        # output_point2 = self.perTransform(self.pos2)
+        # qp.drawLine(output_point1[0], output_point1[1], output_point2[0], output_point2[1])
         # self.label1.setText("{0}, {1}\n{2}, {3}".format(self.pos1[0], self.pos1[1], int(output_point1[0]), int(output_point1[1])))
         qp.end()
         '''
