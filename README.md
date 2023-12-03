@@ -63,3 +63,6 @@
  ### Learning Progress
  - solved the problem that Qpainter cannot draw on the Qlabel. Solution: use QPainter to create a pixmap which is used to fill a new Qlabel created.
  
+## Dec. 3rd, Sun
+### Learning Progress
+- created a drawing board successfully.
