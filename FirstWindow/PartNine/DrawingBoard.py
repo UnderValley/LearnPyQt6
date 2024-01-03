@@ -1,13 +1,35 @@
 import numpy as np
-from PyQt6 import QtGui
 from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton
-from PyQt6.QtGui import QPixmap, QPainter, QPen, QImage, QTransform
-from PyQt6.QtCore import Qt
-import sys
+from PyQt6.QtGui import QPixmap, QPainter, QPen, QImage, QColor, QVector2D
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, pyqtSlot, QRectF, QLineF, QLine
+import sys, math, socket, zss_debug_pb2, MATRIX
+from UDP import ADDRESS, PORT
+from color import COLOR
 
-tr_matrix = np.array([[ 3.16260888e-02, -3.30701236e-01,  4.19977106e+02],
- [-1.09647099e-01, -1.31679696e-01,  4.87941764e+02],
- [-2.41137870e-04, -2.91447781e-04,  1.00000000e+00]])
+debugPointSize = 3
+carDiameter = 180
+carFaceWidth = 120
+
+
+class UDPReceiveBlue(QThread):
+    receive_debug_signal = pyqtSignal(np.ndarray)
+    debug_msgs = zss_debug_pb2.Debug_Msgs()
+    def __init__(self):
+        super().__init__()
+        self._receive_flag = True
+        self.sock = socket.socket(socket.AF_INET,
+                             socket.SOCK_DGRAM)
+        self.sock.bind((ADDRESS.LOCAL_HOST, PORT.BLUE_DEBUG))
+    def run(self):
+        while True:
+            proto_data, addr = self.sock.recvfrom(65535)
+            self.debug_msgs.ParseFromString(proto_data)
+            self.receive_debug_signal.emit(np.array(1))
+
+
+    def stop(self):
+        self._run_flag = False
+        self.wait()
 
 class Window(QWidget):
     def __init__(self):
@@ -25,12 +47,18 @@ class Window(QWidget):
         self.label2 = QLabel("Release", self)
         self.label1.setGeometry(1240, 370, 100, 100)
         self.label2.setGeometry(1240, 1140, 100, 100)
-        self.label_top = QLabel(self)
-        self.label_top.setGeometry(0,0,1500,1500)
+        self.label_board = QLabel(self)
+        self.label_board.setGeometry(0, 0, 1500, 1500)
         self.image_label.setPixmap(QPixmap.fromImage(QImage('images/Sat Nov 25 17:43:20 2023.png').scaled(self.disply_width, self.display_height, Qt.AspectRatioMode.KeepAspectRatio)))
+        self.label_debug_msg = QLabel(self)
+        self.label_debug_msg.setGeometry(0, 0, 1500, 1500)
 
         self.pos1 = [0, 0]
         self.pos2 = [0, 0]
+
+        self.thread = UDPReceiveBlue()
+        self.thread.receive_debug_signal.connect(self.update_debug_msgs)
+        self.thread.start()
 
     def paintEvent(self, event):
         painter = QPainter()
@@ -56,36 +84,82 @@ class Window(QWidget):
             self.update()
 
     def set_Label(self):
-        pixmap = QPixmap(self.label_top.size())
+        pixmap = QPixmap(self.label_board.size())
         pixmap.fill(Qt.GlobalColor.transparent)
-        transfer = QTransform(3.16260888e-02, -3.30701236e-01, 4.19977106e+02, -1.09647099e-01, -1.31679696e-01,
-                              4.87941764e+02, -2.41137870e-04, -2.91447781e-04, 1.00000000e+00)
         qp = QPainter(pixmap)
-        qp.setTransform(transfer)
-        pen = QPen(Qt.GlobalColor.red, 3)
+        qp.setTransform(MATRIX.BOARD_TRANSFORM)
+        pen = QPen(COLOR.DEBUG[1], 5)           # red
         qp.setPen(pen)
         qp.drawLine(self.pos1[0], self.pos1[1], self.pos2[0], self.pos2[1])
-        # output_point1 = self.perTransform(self.pos1)
-        # output_point2 = self.perTransform(self.pos2)
-        # qp.drawLine(output_point1[0], output_point1[1], output_point2[0], output_point2[1])
-        # self.label1.setText("{0}, {1}\n{2}, {3}".format(self.pos1[0], self.pos1[1], int(output_point1[0]), int(output_point1[1])))
         qp.end()
-        '''
-        transfer = QTransform(3.16260888e-02, -3.30701236e-01,  4.19977106e+02,-1.09647099e-01, -1.31679696e-01,  4.87941764e+02, -2.41137870e-04, -2.91447781e-04,  1.00000000e+00)
-        # transfer = transfer.setMatrix(3.16260888e-02, -3.30701236e-01,  4.19977106e+02,-1.09647099e-01, -1.31679696e-01,  4.87941764e+02, -2.41137870e-04, -2.91447781e-04,  1.00000000e+00)
-        pixmap = pixmap.transformed(transfer)
-        '''
-        self.label_top.setPixmap(pixmap)
+        self.label_board.setPixmap(pixmap)
 
-    def perTransform(self, p):
-        result = np.matmul(tr_matrix, np.array([p[0], p[1], 1]))
-        result = result / result[2]
-        return [result[0], result[1]]
+    # @pyqtSlot(np.ndarray)
+    def update_debug_msgs(self):
+        pixmap = QPixmap(self.label_debug_msg.size())
+        pixmap.fill(Qt.GlobalColor.transparent)
+        qp = QPainter(pixmap)
+        qp.setTransform(MATRIX.DEBUG_TRANSFORM)
+        i = 0
+        chordAngel = math.degrees(math.acos(1.0 * carFaceWidth / carDiameter))
+        while i < len(self.thread.debug_msgs.msgs):
+            msg = self.thread.debug_msgs.msgs[i]
+            if msg.color == zss_debug_pb2.Debug_Msg.Color.USE_RGB:
+                value = msg.RGB_value
+                rgb = [0, 0, 0]
+                for j in range (0, 3):
+                    rgb[2 - j] = value % 1000
+                    value = (value - rgb[2 - j]) / 1000
+                    if rgb[2 - j] > 255 or rgb[2 - j] < 0:      # error value
+                        rgb = [0, 0, 0]
+                        break
+                qp.setPen(QPen(QColor(rgb[0], rgb[1], rgb[2]), 10))
+            else:
+                qp.setPen(QPen(COLOR.DEBUG[msg.color], 10))
+            if msg.type == zss_debug_pb2.Debug_Msg.Debug_Type.ROBOT:
+                qp.drawChord(QRectF((msg.robot.pos.x - 1.2 * carDiameter / 2.0),
+                    (msg.robot.pos.y) + 1.2 * carDiameter / 2.0,(1.2 * carDiameter),
+                    -(1.2 * carDiameter)),90.0 - chordAngel - msg.robot.dir,180.0 + 2 * chordAngel);
+            elif msg.type == zss_debug_pb2.Debug_Msg.Debug_Type.LINE:
+                qp.drawLine(msg.line.start.x, msg.line.start.y, msg.line.end.x, msg.line.end.y)
+            elif msg.type == zss_debug_pb2.Debug_Msg.Debug_Type.ARC:
+                x1 = msg.arc.rect.point1.x
+                x2 = msg.arc.rect.point2.x
+                y1 = msg.arc.rect.point1.y
+                y2 = msg.arc.rect.point2.y
+                minx = min(x1, x2)
+                miny = min(y1, y2)
+                maxx = max(x1, x2)
+                maxy = max(y1, y2)
+                qp.drawArc(QRectF(float(minx), (float(miny)), ((maxx - minx)), ((maxy - miny))), msg.arc.start * 16,
+                           msg.arc.span * 16)
+            elif msg.type == zss_debug_pb2.Debug_Msg.Debug_Type.POINTS:
+                lines = QVector2D(QLine)
+                for j in range(0, len(msg.points())):
+                    lines.push_back(QLine((msg.points().point(i).x() + debugPointSize),
+                                          (msg.points().point(i).y() + debugPointSize),
+                                          (msg.points().point(i).x() - debugPointSize),
+                    (msg.points().point(i).y() - debugPointSize)))
+                    lines.push_back(QLine((msg.points().point(i).x() - debugPointSize),
+                    (msg.points().point(i).y() + debugPointSize),(msg.points().point(i).x() + debugPointSize),
+                    (msg.points().point(i).y() - debugPointSize)))
+                qp.drawLines(lines);
+            elif msg.type == zss_debug_pb2.Debug_Msg.Debug_Type.LINES:
+                lines = QVector2D(QLine)
+                step = 1 if msg.lines().type() == zss_debug_pb2.Debug_Msg.Debug_Lines.LINE else 2
+                for j in range (1, len(msg.lines(), step)):
+                    lines.append(QLineF((msg.lines().vertex(j - 1).x()),msg.lines().vertex(j - 1).y(),
+                    msg.lines().vertex(j).x(),msg.lines().vertex(j).y()))
+                qp.drawLine(lines)
+            i += 1
 
-    # def mouseReleaseEvent(self, event):
-        # self.pos2[0], self.pos2[1] = self.cursor().pos().x() - self.x(), self.cursor().pos().y() - self.y() - 38
-        # self.label2.setText("{0}, {1}".format(self.pos2[0], self.pos2[1]))
-        # self.update()
+        qp.end()
+        self.label_debug_msg.setPixmap(pixmap)
+
+
+    # def __paint_line__(self, qp, debug_msgs):
+    #     pen = debug_msgs.color()
+
 
 app = QApplication(sys.argv)
 window = Window()

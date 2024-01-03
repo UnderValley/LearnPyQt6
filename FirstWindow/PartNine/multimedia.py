@@ -1,4 +1,3 @@
-import numpy
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton
 from PyQt6.QtGui import QPixmap, QPainter, QPen, QImage
