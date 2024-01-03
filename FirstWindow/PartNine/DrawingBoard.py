@@ -37,7 +37,7 @@ class Window(QWidget):
         self.setWindowTitle("Qt live label demo")
         self.disply_width = 640 * 2
         self.display_height = 480 * 2
-        self.setGeometry(200, 200, 640 * 2, 480 * 2)
+        self.setGeometry(0, 0, 9000, 6000)
         # create the label that holds the image
         self.image_label = QLabel(self)
         self.image_label.setGeometry(11, 285, self.disply_width, self.display_height)
