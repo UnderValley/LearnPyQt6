@@ -1,9 +1,16 @@
 # About the project
-- In the there are three directories in the "FirstWindow", in which "Part One" & "Part Two" record the process I learnt PyQt6. And in the rest is the main code of the project.
-- "camera calibration.py" is a program to calibrate camera and get its paraments.
-- "DrawingBoard.py" is a test program, testing the transformation matrix.
-- "transformationMatrix.py" get transformation matrix offline.
-- "multimedia" will be the final client to achieve the objective of this project.
+- There are three directories in the "FirstWindow", in which "Part One" & "Part Two" record the process I learnt PyQt6. And in the rest is the main code of the project.
+> Part Nine
+> > The main programs 
+> > > multimedia.py: the main function module
+> > > DrawingBoard.py: the main test module
+> > > color.py: include some color definition
+> > > MATRIX.py: include the transform matrix to be used
+> > > UDP.py: include the UDP settings information
+> > Tools & Test
+> > > camera calibration.py
+> > > transformationMatrix.py
+> > > UDPsocket.py
 
 # Learn Process Record
 ## Thur. 19th, Oct
@@ -75,3 +82,14 @@
 - created a drawing board successfully.
 ### Problems
 - have no figured out how to use the function/method Qpixmap.transformed() yet. 
+
+## Dec. 17th, Sun
+### Learning Progress
+- figured out how to use the class Qtransform
+
+## Jan 6th, Sat. 2024
+It's been a long day ~~without you my friend ~~ since I upgraded this README last time. During the time, I lay down a lot. Sometimes, I was confused by the protobuf, while ohter times I was busy with OOP. Anyhow, now I finally worked it out, but still left some bugs in the demo to be solved.
+
+### Bugs remaining
+- Process finished with exit code 139 (interrupted by signal 11:SIGSEGV). It's a buffer overflow ERROR, but I have not figured out where is it.
+- While the program running, it stuck the Athena somehow, I don't know why.

@@ -17,7 +17,11 @@ while True:
     data, addr = sock.recvfrom(65535)
     a.ParseFromString(data)
     # print("received message: %s \n***************************************" % a)
-    # print(len(a.msgs))
+    print(len(a.msgs))
+    i = 0
+    while i < len(a.msgs):
+        assd = a.msgs[i]
+        i += 1
     print("********\n")
-    print(a)
+    # print(a)
     print("********\n")
