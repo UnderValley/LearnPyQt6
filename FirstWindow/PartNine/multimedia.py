@@ -7,8 +7,8 @@ from PyQt6.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
 import numpy as np
 import time
 
-mtx = np.array([[329.27575738, 0, 347.99824656], [0, 328.85582461, 219.0933177 ], [0, 0, 1]])
-dist = np.array([-3.39635228e-01, 1.58532494e-01, 7.93601798e-04, 1.17840905e-04, -4.30169501e-02])
+mtx = np.array([[329.27575738, 0, 347.99824656], [0, 328.85582461, 219.0933177 ], [0, 0, 1]])   # camera matrix
+dist = np.array([-3.39635228e-01, 1.58532494e-01, 7.93601798e-04, 1.17840905e-04, -4.30169501e-02]) # camera undist
 tr_matrix = np.array([[ 3.16260888e-02, -3.30701236e-01,  4.19977106e+02],
  [-1.09647099e-01, -1.31679696e-01,  4.87941764e+02],
  [-2.41137870e-04, -2.91447781e-04,  1.00000000e+00]])  # perspective transformation matrix

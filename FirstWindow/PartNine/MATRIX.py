@@ -9,8 +9,13 @@ _debug = np.array([[1.03106760e-01, -9.86045165e-03, 6.66978152e+02],
                    [ 4.10553857e-02,  3.41860141e-02, 5.60431240e+02],
                    [ 9.08682314e-05,  7.51824966e-05,  1.00000000e+00]])
 
+_debug_board_ = np.array([[ 0.00e+00, -1.00e-01,  1.85e+03],
+                          [-1.00e-01,  0.00e+00,  8.00e+02],
+                          [ 0.00e+00,  0.00e+00,  1.00e+00]])
+
 BOARD_TRANSFORM = QTransform()
 DEBUG_TRANSFORM = QTransform()
+DEBUG_BOARD_TRANSFORM = QTransform()
 BOARD_TRANSFORM.setMatrix(_board[0][0], _board[1][0], _board[2][0],
                           _board[0][1], _board[1][1], _board[2][1],
                           _board[0][2], _board[1][2], _board[2][2])
@@ -18,3 +23,7 @@ BOARD_TRANSFORM.setMatrix(_board[0][0], _board[1][0], _board[2][0],
 DEBUG_TRANSFORM.setMatrix(_debug[0][0], _debug[1][0], _debug[2][0],
                           _debug[0][1], _debug[1][1], _debug[2][1],
                           _debug[0][2], _debug[1][2], _debug[2][2])
+
+DEBUG_BOARD_TRANSFORM.setMatrix(_debug_board_[0][0], _debug_board_[1][0], _debug_board_[2][0],
+                                _debug_board_[0][1], _debug_board_[1][1], _debug_board_[2][1],
+                                _debug_board_[0][2], _debug_board_[1][2], _debug_board_[2][2])

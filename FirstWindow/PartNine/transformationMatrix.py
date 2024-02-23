@@ -7,10 +7,10 @@ p3 = [6000, -4500]
 p4 = [-6000, -4500]
 p5 = np.array([1850, 1400, 1])
 
-p1_prime = [659, 510]
-p2_prime = [5, 590]
-p3_prime = [1102, 541]
-p4_prime = [796, 1376]
+p1_prime = [1400, 200]
+p2_prime = [1400, 1400]
+p3_prime = [2300, 200]
+p4_prime = [2300, 1400]
 
 p = np.float32([p1, p2, p3, p4])
 p_prime = np.float32([p1_prime, p2_prime, p3_prime, p4_prime])
